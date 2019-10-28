@@ -1,0 +1,58 @@
+---
+#title: "Burlington Police Incidents"
+#author: "Jane Adams, RJ Luongo, Reed Simon"
+#date: "10/28/2019"
+output: html_document
+---
+
+# Burlington Police Incidents
+
+> Through October 1, 2019
+
+Jane Adams, RJ Luongo, Reed Simon
+
+# Data Cleaning
+
+Importing police incidents and loading required packages
+
+```{r setup, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+i <- read.csv("./Incidents_2019-10-01.csv")
+library(tidyverse)
+library(lubridate)
+```
+
+First we, use luridate to format the call date and time in a way that's easier to analyze and plot.
+
+```{r cleani}
+i <- i %>% 
+  mutate(DayOfWeek = lubridate::wday(call_time, label = TRUE)) %>% 
+  mutate(Hour = lubridate::hour(call_time)) %>% 
+  mutate(Month = lubridate::month(call_time, label = TRUE)) %>% 
+  mutate(DayOfMonth = lubridate::day(call_time))
+```
+
+We then remove the columns that aren't relevant to our analysis and bloat the dataset.
+
+```{r removecol}
+i <- i %>% select(-c(incident_number, call_time, Street, call_origin, Area, Latitude, Longitude))
+```
+
+Here we plot the total number of incidents for each day of the week.
+
+```{r exampleplot}
+ggplot(data = i, mapping = aes(x = DayOfWeek)) + geom_bar() +
+  theme_bw() + theme(axis.text.x = element_text(hjust=1, angle = 45)) +
+  labs(title = "Total Count of Incidents by Day of Week", y = "Count", x = "Day of Week")
+```
+
+And here we look at the distribution of type of incident for each day of the week.
+
+```{r incidentbytype}
+ggplot(data = i, mapping = aes(x = DayOfWeek, fill = call_type_group)) + 
+  geom_bar(position = 'fill') +
+  theme_bw() + theme(axis.text.x = element_text(hjust=1, angle = 45)) +
+  labs(title = "Incidents by Day of Week, Grouped by Incident Type")
+```
+
